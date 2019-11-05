@@ -20,10 +20,10 @@ class PubsEntityForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form = parent::buildForm($form, $form_state);
     $entity = $this->entity;
-    //Second half checks for null value on required field, can be removed if they should be shown when first creating
-    if ($entity->field_from_feed->value != 0 || $form_state->field_product_id->value == null) {
-      $form['weight'] = null;
-      $form['field_product_id'] = null;
+    $form['revision_log_message']['#access'] = false;
+    if ($entity->field_from_feed->value != 0) {
+      $form['weight']['#access'] = false;
+      $form['field_product_id']['#access'] = false;
     }
     return $form;
   }

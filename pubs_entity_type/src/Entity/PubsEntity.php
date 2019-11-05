@@ -29,6 +29,8 @@ use Drupal\Core\Entity\EntityPublishedTrait;
  *     "access" = "Drupal\pubs_entity_type\PubsEntityAccessControlHandler",
  *   },
  *    base_table = "pubs_entity",
+ *    revision_table = "pubs_entity_revision",
+ *    revision_data_table = "pubs_entity_field_revision",
  *    admin_permission = "administer pubs entity",
  *    fieldable = TRUE,
  *    links = {
@@ -43,7 +45,13 @@ use Drupal\Core\Entity\EntityPublishedTrait;
  *      "uuid" = "uuid",
  *      "label" = "title",
  *      "published" = "status",
+ *      "revision" = "revision_id",
  *      "status" = "status",
+ *    },
+ *    revision_metadata_keys = {
+ *      "revision_user" = "revision_user",
+ *      "revision_created" = "revision_created",
+ *      "revision_log_message",
  *    },
  *    field_ui_base_route = "pubs_entity.pubs_entity_settings",
  *  )
@@ -196,6 +204,7 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
     $fields['field_image_url'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Image URL'))
       ->setTranslatable(FALSE)
+      ->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setSettings(array(
         'default_value' => '',
@@ -231,20 +240,12 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ->setRequired(FALSE)
       ->setSettings(array(
         'default_value' => FALSE,
-      ))
-      ->setDisplayOptions('form', array(
-        'type' => 'string',
-        'weight' => 4,
-        'region' => 'content',
-        'settings' => array(
-          'placeholder' => 'false',
-        ),
-      ))
-      ->setDisplayConfigurable('form', TRUE);
+      ));
 
       $fields['weight'] = BaseFieldDefinition::create('integer')
         ->setLabel(t('Weight'))
         ->setTranslatable(TRUE)
+        ->setRevisionable(TRUE)
         ->setSettings(array(
           'max_length' => 255,
         ))
