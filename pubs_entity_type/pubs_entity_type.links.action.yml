@@ -1,0 +1,5 @@
+staff_profile.add_form:
+  route_name: entity.pubs_entity.add_form
+  title: 'Add Publication Entity'
+  appears_on:
+    - entity.pubs_entity.collection

@@ -1,0 +1,42 @@
+#Display list of pubs_entity
+entity.pubs_entity.collection:
+  path: '/pubs/admin'
+  defaults:
+    _entity_list: 'pubs_entity'
+    _title: 'Publications Entity'
+  requirements:
+    _permission: 'administer pubs_entity entity'
+  options:
+    _admin_route: TRUE
+#Display individual pub entity
+entity.pubs_entity.canonical:
+  path: '/pubs/{pubs_entity}'
+  defaults:
+    _entity_view: 'pubs_entity'
+    _title: 'Pubs Entities'
+  requirements:
+    _entity_access: 'pubs_entity.view'
+#Form to edit individual pubs entity
+entity.pubs_entity.edit_form:
+  path: '/pubs/{pubs_entity}/edit'
+  defaults:
+    _entity_form: 'pubs_entity.edit'
+    _title: 'Edit Pubs Entity'
+  requirements:
+    _entity_access: 'pubs_entity.edit'
+#Form to add pubs entity
+entity.pubs_entity.add_form:
+  path: '/pubs/add'
+  defaults:
+    _entity_form: 'pubs_entity.add'
+    _title: 'Add Pubs Entity'
+  requirements:
+    _entity_create_access: 'pubs_entity'
+#Form to remove a profile
+entity.pubs_entity.delete_form:
+  path: '/pubs/{pubs_entity}/delete'
+  defaults:
+    _entity_form: 'pubs_entity.delete'
+    _title: "Delete Profile"
+  requirements:
+    _entity_access: "pubs_entity.delete"
