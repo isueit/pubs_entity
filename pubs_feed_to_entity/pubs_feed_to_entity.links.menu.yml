@@ -1,0 +1,5 @@
+pubs_feed_to_entity.settings.link:
+  title: Load Pubs entitied from Feed
+  description: 'Create Pubs from Feeds'
+  route_name: pubs_feed_to_entity.feeds_to_entity_settings
+  parent: system.admin_content

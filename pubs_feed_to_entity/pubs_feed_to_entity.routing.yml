@@ -1,0 +1,9 @@
+pubs_feed_to_entity.feeds_to_entity_settings:
+  path: 'admin/content/pubsfromfeed'
+  defaults:
+    _form: '\Drupal\pubs_feed_to_entity\Form\FeedPubsToEntitySettingsForm'
+    _title: 'Load Pubs entitied from Feed'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin-route: TRUE

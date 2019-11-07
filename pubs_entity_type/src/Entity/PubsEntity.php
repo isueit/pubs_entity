@@ -179,6 +179,7 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ->setLabel(t('Product ID'))
       ->setTranslatable(FALSE)
       ->setRequired(TRUE)
+      ->addConstraint('UniquePubId')
       ->setSettings(array(
         'default_value' => '',
         'max_length' => 225,
@@ -218,19 +219,18 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ))
       ->setDisplayConfigurable('view', TRUE);
 
-    $field['field_publication_date'] = BaseFieldDefinition::create('date')
-      ->setLabel(t('Publication Date'))
+    $field['field_publication_date'] = BaseFieldDefinition::create('datetime')
+      ->setLabel(t('Product Publication Date'))
       ->setTranslatable(FALSE)
+      ->setRevisionable(TRUE)
       ->setRequired(TRUE)
       ->setSettings(array(
-        'default_value' => '',
-        'max_length' => 225,
+        'datetime_type' => 'date'
       ))
       ->setDisplayOptions('view', array(
-        'type' => 'string',
+        'type' => 'datetime_default',
         'weight' => 3,
         'region' => 'content',
-        'label' => 'hidden',
       ))
       ->setDisplayConfigurable('view', TRUE);
 

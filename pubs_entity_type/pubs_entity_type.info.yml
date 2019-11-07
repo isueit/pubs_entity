@@ -4,3 +4,5 @@ core: 8.x
 description: 'Creates the entity type pubs_entity'
 version: '8.x-1.0-dev'
 package: 'ISUEO'
+dependencies:
+  - datetime
