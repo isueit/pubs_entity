@@ -152,7 +152,9 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
               if ($item['productID'] == $this->field_product_id->value) {
                   $this->title->value = $item['title'];
                   $this->field_image_url->value = $item['image'];
-                  $this->field_publication_date->value = $item['pubDate'];
+                  $date = explode('/', $item['pubDate']);
+                  $formatDate = '1-' . $date[0] . '-' . $date[1];
+                  $this->field_publication_date->value = $formatDate;
                 $found = true;
                 break;
               }
@@ -252,16 +254,16 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ))
       ->setDisplayConfigurable('view', TRUE);
 
-    $field['field_publication_date'] = BaseFieldDefinition::create('string')
+    $fields['field_publication_date'] = BaseFieldDefinition::create('datetime')
       ->setLabel(t('Product Publication Date'))
       ->setTranslatable(FALSE)
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      // ->setSettings(array(
-      //   'datetime_type' => 'date'
-      // ))
+      ->setSettings(array(
+        'datetime_type' => 'date'
+      ))
       ->setDisplayOptions('view', array(
-        'type' => 'string',
+        'type' => 'datetime',
         'weight' => 3,
         'region' => 'content',
       ))
