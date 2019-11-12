@@ -10,6 +10,7 @@ use Drupal\user\UserInterface;
 use Drupal\pubs_entity_type\PubsEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityPublishedTrait;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Defines pubs_entity entity class
@@ -137,6 +138,38 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
+    if ($this->title->value == "") {
+      $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
+      $url_host = parse_url($url, PHP_URL_HOST);
+      //Only allow approved hosts
+      if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
+        try {
+          $raw = file_get_contents($url);
+          $items = json_decode($raw, TRUE)['pubs'];
+          $found = false;
+          if (count($items) > 0) {
+            foreach ($items as $item) {
+              if ($item['productID'] == $this->field_product_id->value) {
+                  $this->title->value = $item['title'];
+                  $this->field_image_url->value = $item['image'];
+                  $this->field_publication_date->value = $item['pubDate'];
+                $found = true;
+                break;
+              }
+            }
+          }
+          if (!$found) {
+            $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+            $response->send();
+            drupal_set_message(t('Provided product ID was not found in the given feed'), 'error');
+            exit;
+          }
+        } catch (\Exception $e) {
+          drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
+        }
+      }
+    }
+
     parent::preSave($storage);
   }
 
@@ -219,16 +252,16 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ))
       ->setDisplayConfigurable('view', TRUE);
 
-    $field['field_publication_date'] = BaseFieldDefinition::create('datetime')
+    $field['field_publication_date'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Product Publication Date'))
       ->setTranslatable(FALSE)
       ->setRevisionable(TRUE)
       ->setRequired(TRUE)
-      ->setSettings(array(
-        'datetime_type' => 'date'
-      ))
+      // ->setSettings(array(
+      //   'datetime_type' => 'date'
+      // ))
       ->setDisplayOptions('view', array(
-        'type' => 'datetime_default',
+        'type' => 'string',
         'weight' => 3,
         'region' => 'content',
       ))

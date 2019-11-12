@@ -78,6 +78,8 @@ class FeedPubsToEntitySettingsForm extends ConfigFormBase {
       } catch (\Exception $e) {
         drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
       }
+    } else {
+      drupal_set_message(t('Only feeds from Extension Store allowed'), 'error');
     }
   }
 }
