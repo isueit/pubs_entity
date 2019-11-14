@@ -65,11 +65,13 @@ class FeedPubsToEntitySettingsForm extends ConfigFormBase {
           //Prevent duplicates
           $existing = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_product_id' => $item['productID']]);
           if (count($existing) == 0) {
+            $date = explode('/', $item['pubDate']);
+            $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
             $newEntity = \Drupal\pubs_entity_type\Entity\PubsEntity::create([
               'title' => $item['title'],
               'field_product_id' => $item['productID'],
               'field_image_url' => $item['image'],
-              'field_publication_date' => $item['pubDate']
+              'field_publication_date' => $formatDate,
             ]);
             $newEntity->setPublished();
             $newEntity->save();

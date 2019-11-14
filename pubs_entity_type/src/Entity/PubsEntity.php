@@ -153,7 +153,7 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
                   $this->title->value = $item['title'];
                   $this->field_image_url->value = $item['image'];
                   $date = explode('/', $item['pubDate']);
-                  $formatDate = '1-' . $date[0] . '-' . $date[1];
+                  $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
                   $this->field_publication_date->value = $formatDate;
                 $found = true;
                 break;
@@ -263,7 +263,11 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
         'datetime_type' => 'date'
       ))
       ->setDisplayOptions('view', array(
-        'type' => 'datetime',
+        'type' => 'datetime_custom',
+        'settings' => [
+          'date_format' => 'm/Y',
+          ],
+        'label' => 'hidden',
         'weight' => 3,
         'region' => 'content',
       ))
