@@ -1,0 +1,5 @@
+{
+  "name": "isueit/pubs_entity",
+  "type": "drupal-custom-module",
+  "description": "Modules to create an entity for publications, and a feed to pull publications from the Extension Store"
+}
