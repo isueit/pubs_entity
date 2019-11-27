@@ -35,11 +35,11 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  *    admin_permission = "administer pubs entity",
  *    fieldable = TRUE,
  *    links = {
- *      "canonical" = "/pubs/{pubs_entity}",
- *      "add-page" = "/pubs/add",
- *      "edit-form" = "/pubs/{pubs_entity}/edit",
- *      "delete-form" = "/pubs/{pubs_entity}/delete",
- *      "collection" = "/pubs/admin",
+ *      "canonical" = "/pubs_entity/{pubs_entity}",
+ *      "add-page" = "/pubs_entity/add",
+ *      "edit-form" = "/pubs_entity/{pubs_entity}/edit",
+ *      "delete-form" = "/pubs_entity/{pubs_entity}/delete",
+ *      "collection" = "/pubs_entity/admin",
  *    },
  *    entity_keys = {
  *      "id" = "id",
@@ -247,7 +247,7 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
         'max_length' => 225,
       ))
       ->setDisplayOptions('view', array(
-        'type' => 'string',
+        'type' => 'remote_pubs_image',
         'weight' => 2,
         'region' => 'content',
         'label' => 'hidden',

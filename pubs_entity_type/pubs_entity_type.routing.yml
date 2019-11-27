@@ -1,6 +1,6 @@
 #Display list of pubs_entity
 entity.pubs_entity.collection:
-  path: '/pubs/admin'
+  path: '/pubs_entity/admin'
   defaults:
     _entity_list: 'pubs_entity'
     _title: 'Publications Entity'
@@ -8,9 +8,10 @@ entity.pubs_entity.collection:
     _permission: 'administer pubs_entity entity'
   options:
     _admin_route: TRUE
+  user: \d+
 #Display individual pub entity
 entity.pubs_entity.canonical:
-  path: '/pubs/{pubs_entity}'
+  path: '/pubs_entity/{pubs_entity}'
   defaults:
     _entity_view: 'pubs_entity'
     _title: 'Pubs Entities'
@@ -18,28 +19,34 @@ entity.pubs_entity.canonical:
     _entity_access: 'pubs_entity.view'
 #Form to edit individual pubs entity
 entity.pubs_entity.edit_form:
-  path: '/pubs/{pubs_entity}/edit'
+  path: '/pubs_entity/{pubs_entity}/edit'
   defaults:
     _entity_form: 'pubs_entity.edit'
     _title: 'Edit Pubs Entity'
   requirements:
     _entity_access: 'pubs_entity.edit'
+  options:
+    _admin_route: TRUE
 #Form to add pubs entity
 entity.pubs_entity.add_form:
-  path: '/pubs/add'
+  path: '/pubs_entity/add'
   defaults:
     _entity_form: 'pubs_entity.add'
     _title: 'Add Pubs Entity'
   requirements:
     _entity_create_access: 'pubs_entity'
+  options:
+    _admin_route: TRUE
 #Form to remove a profile
 entity.pubs_entity.delete_form:
-  path: '/pubs/{pubs_entity}/delete'
+  path: '/pubs_entity/{pubs_entity}/delete'
   defaults:
     _entity_form: 'pubs_entity.delete'
     _title: "Delete Profile"
   requirements:
     _entity_access: "pubs_entity.delete"
+  options:
+    _admin_route: TRUE
 #Settings form
 pubs_entity_type.pubs_settings_form:
   path: 'admin/config/pubs_entity_settings'

@@ -5,7 +5,7 @@ pubs_entity.admin.config.content.list:
   parent: system.admin_content
 
 pubs_entity_type.settings:
-  title: Pubs Entities Setings
+  title: Pubs Entities Settings
   description: 'Adjust settings for pubs entities'
   route_name: pubs_entity_type.pubs_settings_form
   parent: system.admin_config_content
