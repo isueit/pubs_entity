@@ -144,21 +144,17 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       //Only allow approved hosts
       if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
         try {
-          $raw = file_get_contents($url);
-          $items = json_decode($raw, TRUE)['pubs'];
+          debug($url . "/" . $this->field_product_id->value);
+          $raw = file_get_contents($url . "/" . $this->field_product_id->value);
+          $item = json_decode($raw, TRUE);
           $found = false;
-          if (count($items) > 0) {
-            foreach ($items as $item) {
-              if ($item['productID'] == $this->field_product_id->value) {
-                  $this->title->value = $item['title'];
-                  $this->field_image_url->value = $item['image'];
-                  $date = explode('/', $item['pubDate']);
-                  $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
-                  $this->field_publication_date->value = $formatDate;
-                $found = true;
-                break;
-              }
-            }
+          if ($item['productID'] == $this->field_product_id->value) {
+            $this->title->value = $item['title'];
+            $this->field_image_url->value = $item['image'];
+            $date = explode('/', $item['pubDate']);
+            $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
+            $this->field_publication_date->value = $formatDate;
+            $found = true;
           }
           if (!$found) {
             $response = new RedirectResponse(\Drupal::request()->getRequestUri());
