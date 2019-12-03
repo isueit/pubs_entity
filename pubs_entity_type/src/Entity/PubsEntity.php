@@ -44,7 +44,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  *    entity_keys = {
  *      "id" = "id",
  *      "uuid" = "uuid",
- *      "label" = "title",
+ *      "label" = "name",
  *      "published" = "status",
  *      "revision" = "revision_id",
  *      "status" = "status",
@@ -138,18 +138,22 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
-    if ($this->title->value == "") {
+    if ($this->name->value == "") {
       $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
       $url_host = parse_url($url, PHP_URL_HOST);
       //Only allow approved hosts
       if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
         try {
-          debug($url . "/" . $this->field_product_id->value);
-          $raw = file_get_contents($url . "/" . $this->field_product_id->value);
+          if (0 === substr_compare($url, "/", -1)) {
+            $raw = file_get_contents($url . $this->field_product_id->value);
+          } else {
+            $raw = file_get_contents($url . "/" . $this->field_product_id->value);
+          }
+
           $item = json_decode($raw, TRUE);
           $found = false;
           if ($item['productID'] == $this->field_product_id->value) {
-            $this->title->value = $item['title'];
+            $this->name->value = $item['title'];
             $this->field_image_url->value = $item['image'];
             $date = explode('/', $item['pubDate']);
             $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
@@ -196,21 +200,20 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ->setLabel(t('UUID'))
       ->setReadOnly(TRUE);
 
-    $fields['title'] = BaseFieldDefinition::create('string')
+    $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
       ->setTranslatable(FALSE)
       ->setRequired(TRUE)
       ->setSettings(array(
         'default_value' => '',
         'max_length' => 225,
-      ))
-      ->setDisplayConfigurable('form', FALSE);
+      ));
 
     $fields['field_product_id'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Product ID'))
       ->setTranslatable(FALSE)
       ->setRequired(TRUE)
-      ->addConstraint('UniquePubId')
+      //->addConstraint('UniquePubId')
       ->setSettings(array(
         'default_value' => '',
         'max_length' => 225,
@@ -237,7 +240,6 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ->setLabel(t('Image URL'))
       ->setTranslatable(FALSE)
       ->setRevisionable(TRUE)
-      ->setRequired(TRUE)
       ->setSettings(array(
         'default_value' => '',
         'max_length' => 225,
@@ -248,6 +250,13 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
         'region' => 'content',
         'label' => 'hidden',
       ))
+      ->setDisplayOptions('form', array(
+        'type' => 'remote_pubs_image',
+        'weight' => 2,
+        'region' => 'content',
+        'label' => 'hidden',
+      ))
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['field_publication_date'] = BaseFieldDefinition::create('datetime')
@@ -313,12 +322,6 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
           'placeholder' => '',
         ),
       ))
-      ->setDisplayOptions('view', array(
-        'label' => 'hidden',
-        'type' => 'entity_reference_label',
-        'weight' => 23,
-      ))
-      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayConfigurable('form', TRUE);
 
     $fields['status'] = BaseFieldDefinition::create('boolean')

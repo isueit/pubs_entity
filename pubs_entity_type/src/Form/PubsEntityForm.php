@@ -48,5 +48,27 @@ class PubsEntityForm extends ContentEntityForm {
     return $status;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    $entity = $form_state->getFormObject()->getEntity();
+    $existing = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_product_id' => $form_state->getValue('field_product_id')[0]]);
+    if ($entity->isNew()) {
+      if (count($existing) > 0) {
+        $form_state->setErrorByName('field_product_id', $this->t("A publication entity already exists with this ID"));
+      }
+    } else {
+      if ($entity->field_product_id->value != $form_state->getValue('field_product_id')[0]['value']) {
+        $form_state->setErrorByName('field_product_id', $this->t("The publication ID may not be changed on existing entities"));
+      } else if (count($existing) == 1 && array_key_exists($entity->id(), $existing)) {
+        //editing existing
+      } else {
+        debug("Unknown Product ID error");//TODO remove after testing
+      }
+    }
+  }
+
 
 }

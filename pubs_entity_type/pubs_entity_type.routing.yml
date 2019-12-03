@@ -14,7 +14,7 @@ entity.pubs_entity.canonical:
   path: '/pubs_entity/{pubs_entity}'
   defaults:
     _entity_view: 'pubs_entity'
-    _title: 'Pubs Entities'
+    _title: 'Publication'
   requirements:
     _entity_access: 'pubs_entity.view'
 #Form to edit individual pubs entity

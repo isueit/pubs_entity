@@ -154,17 +154,14 @@ display:
           entity_type: pubs_entity
           entity_field: field_product_id
           plugin_id: field
-        title:
+        name:
+          id: name
           table: pubs_entity
-          field: title
-          id: title
-          entity_type: null
-          entity_field: title
-          plugin_id: field
+          field: name
           relationship: none
           group_type: group
           admin_label: ''
-          label: ''
+          label: Name
           exclude: false
           alter:
             alter_text: false
@@ -207,7 +204,8 @@ display:
           hide_alter_empty: true
           click_sort_column: value
           type: string
-          settings: {  }
+          settings:
+            link_to_entity: false
           group_column: value
           group_columns: {  }
           group_rows: true
@@ -218,6 +216,9 @@ display:
           multi_type: separator
           separator: ', '
           field_api_classes: false
+          entity_type: pubs_entity
+          entity_field: name
+          plugin_id: field
         nothing:
           id: nothing
           table: views
@@ -483,18 +484,7 @@ display:
             nothing: '0'
           destination: true
           plugin_id: dropbutton
-      filters:
-        status:
-          value: '1'
-          table: pubs_entity
-          field: status
-          plugin_id: boolean
-          entity_type: pubs_entity
-          entity_field: status
-          id: status
-          expose:
-            operator: ''
-          group: 1
+      filters: {  }
       sorts: {  }
       title: 'Publication Entities Admin'
       header: {  }
