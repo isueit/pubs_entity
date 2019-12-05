@@ -60,24 +60,28 @@ class FeedPubsToEntitySettingsForm extends ConfigFormBase {
     if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
       try {
         $raw = file_get_contents($url);
-        $items = json_decode($raw, TRUE)['pubs'];
+        $items = json_decode($raw, TRUE);
+        $entity_config = \Drupal::service('config.factory')->getEditable('pubs_entity_type.settings');
+        $saved_url = $entity_config->get('pubs_store_url');
+        $entity_config->set('pubs_store_url', $url);
+        $entity_config->save();
+
         foreach ($items as $item) {
           //Prevent duplicates
           $existing = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_product_id' => $item['productID']]);
           if (count($existing) == 0) {
-            $date = explode('/', $item['pubDate']);
-            $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
             $newEntity = \Drupal\pubs_entity_type\Entity\PubsEntity::create([
-              'title' => $item['title'],
               'field_product_id' => $item['productID'],
-              'field_image_url' => $item['image'],
-              'field_publication_date' => $formatDate,
-            ]);
+            ]);//Post save finds the other fields
             $newEntity->setPublished();
             $newEntity->save();
           }
         }
+        $entity_config->set('pubs_store_url', $saved_url);
+        $entity_config->save();
       } catch (\Exception $e) {
+        $entity_config->set('pubs_store_url', $saved_url);
+        $entity_config->save();
         drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
       }
     } else {

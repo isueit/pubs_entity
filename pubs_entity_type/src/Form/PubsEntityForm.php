@@ -61,11 +61,12 @@ class PubsEntityForm extends ContentEntityForm {
       }
     } else {
       if ($entity->field_product_id->value != $form_state->getValue('field_product_id')[0]['value']) {
-        $form_state->setErrorByName('field_product_id', $this->t("The publication ID may not be changed on existing entities"));
+        //Dissallow changing the id, may use depending on how entities are referenced
+        //$form_state->setErrorByName('field_product_id', $this->t("The publication ID may not be changed on existing entities"));
       } else if (count($existing) == 1 && array_key_exists($entity->id(), $existing)) {
         //editing existing
       } else {
-        debug("Unknown Product ID error");//TODO remove after testing
+        debug("Unknown Publication entity ID error");//TODO remove after testing
       }
     }
   }

@@ -20,11 +20,13 @@ class PubImageWidget extends WidgetBase {
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, $form_state) {
     $element = [];
     foreach ($items as $delta => $item) {
-      $element[$delta] = [
-        '#type' => 'markup',
-        '#markup' => $this->getEmbedCode($item),
-        '#allowed_tags' => ['img', 'a', 'div'],
-      ];
+      if ($item->value != "") {
+        $element[$delta] = [
+          '#type' => 'markup',
+          '#markup' => $this->getEmbedCode($item),
+          '#allowed_tags' => ['img', 'a', 'div'],
+        ];
+      }
     }
     return $element;
   }
@@ -32,15 +34,15 @@ class PubImageWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  protected function getEmbedCode($value) {
+  protected function getEmbedCode($item) {
     $url = "";
-    if (is_string($value)) {
-      $url = $value;
-    } elseif ($value instanceof FieldItemInterface) {
-      $class = get_class($value);
+    if (is_string($item)) {
+      $url = $item;
+    } elseif ($item instanceof FieldItemInterface) {
+      $class = get_class($item);
       $property = $class::mainPropertyName();
       if ($property) {
-        $url = $value->$property;
+        $url = $item->value;
       }
     }
     return "<img src='" . $url . "' alt='Publication Image'>";

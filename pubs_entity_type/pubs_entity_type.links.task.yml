@@ -1,0 +1,5 @@
+entity.pubs_entity_type.collection:
+  title: 'Publication'
+  route_name: entity.pubs_entity.collection
+  base_route: system.admin_content
+  weight: 12

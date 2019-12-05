@@ -1,4 +1,0 @@
-entity.pubs_entity.collection:
-  title: 'Publication'
-  route_name: views.publication_entities_admin.admin_panel
-  base_route: system.admin_content

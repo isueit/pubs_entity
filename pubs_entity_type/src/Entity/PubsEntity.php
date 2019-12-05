@@ -138,21 +138,30 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
-    if ($this->name->value == "") {
-      $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
-      $url_host = parse_url($url, PHP_URL_HOST);
-      //Only allow approved hosts
-      if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
-        try {
-          if (0 === substr_compare($url, "/", -1)) {
-            $raw = file_get_contents($url . $this->field_product_id->value);
-          } else {
-            $raw = file_get_contents($url . "/" . $this->field_product_id->value);
-          }
+    $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
+    $url_host = parse_url($url, PHP_URL_HOST);
+    //Only allow approved hosts
+    if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
+      try {
+        if (0 === substr_compare($url, "/", -1)) {
+          $raw = file_get_contents($url . $this->field_product_id->value);
+        } else if (0 === substr_compare($url, ".json", -5)) {
+          $raw = file_get_contents($url);
+        } else {
+          $raw = file_get_contents($url . "/" . $this->field_product_id->value);
+        }
 
-          $item = json_decode($raw, TRUE);
-          $found = false;
-          if ($item['productID'] == $this->field_product_id->value) {
+        $decoded = json_decode($raw, TRUE);
+
+        if (is_array($decoded) && is_array($decoded[0])) {
+          $items = $decoded;
+        } else {
+          $items = [$decoded];
+        }
+        $found = false;
+
+        foreach ($items as $item) {
+          if (array_key_exists('productID', $item) && $item['productID'] == $this->field_product_id->value) {
             $this->name->value = $item['title'];
             $this->field_image_url->value = $item['image'];
             $date = explode('/', $item['pubDate']);
@@ -160,15 +169,14 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
             $this->field_publication_date->value = $formatDate;
             $found = true;
           }
-          if (!$found) {
-            $response = new RedirectResponse(\Drupal::request()->getRequestUri());
-            $response->send();
-            drupal_set_message(t('Provided product ID was not found in the given feed'), 'error');
-            exit;
-          }
-        } catch (\Exception $e) {
-          drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
         }
+        if (!$found) {
+          $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+          $response->send();
+          drupal_set_message(t('Provided product ID was not found in the given feed'), 'error');
+        }
+      } catch (\Exception $e) {
+        drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
       }
     }
 
@@ -203,11 +211,24 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
     $fields['name'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
       ->setTranslatable(FALSE)
-      ->setRequired(TRUE)
       ->setSettings(array(
         'default_value' => '',
         'max_length' => 225,
-      ));
+      ))
+      ->setDisplayOptions('view', array(
+        'type' => 'string',
+        'label' => 'hidden',
+        'weight' => 1,
+        'region' => 'content',
+      ))
+      ->setDisplayOptions('form', array(
+        'type' => 'label_text',
+        'label' => 'hidden',
+        'weight' => 1,
+        'region' => 'content',
+      ))
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['field_product_id'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Product ID'))
@@ -218,12 +239,6 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
         'default_value' => '',
         'max_length' => 225,
       ))
-      ->setDisplayOptions('view', array(
-        'type' => 'string',
-        'weight' => 1,
-        'region' => 'content',
-        'label' => 'hidden',
-      ))
       ->setDisplayOptions('form', array(
         'type' => 'number',
         'weight' => 1,
@@ -233,7 +248,6 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
           'placeholder' => '',
         ),
       ))
-      ->setDisplayConfigurable('view', TRUE)
       ->setDisplayConfigurable('form', TRUE);
 
     $fields['field_image_url'] = BaseFieldDefinition::create('string')
