@@ -1,0 +1,63 @@
+<?php
+namespace Drupal\pubs_entity_type;
+
+function validatePubsEntity($validateID, $curEntity) {
+  debug($validateID);
+  if (!is_numeric($validateID)) {
+    return "NaN";
+  }
+
+  $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
+  $url_host = parse_url($url, PHP_URL_HOST);
+  if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
+    try {
+      if (0 === substr_compare($url, "/", -1)) {
+        $raw = file_get_contents($url . $validateID);
+      } else if (0 === substr_compare($url, ".json", -5)) {
+        $raw = file_get_contents($url);
+      } else {
+        $raw = file_get_contents($url . "/" . $validateID);
+      }
+      debug($raw);
+      $decoded = json_decode($raw);
+      if (is_object($decoded) && get_class($decoded) == 'stdClass') {
+        $items[] = $decoded;
+      } else if (is_array($decoded)) {
+        $items = $decoded;
+      }
+      $found = null;
+
+      foreach ($items as $item) {
+        if (array_key_exists('productID', $item) && $validateID == $item->productID) {
+          $found = $item;
+          break;
+        }
+      }
+      if ($found != null) {
+        $existing = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_product_id' => $validateID]);
+        if ($curEntity != null && $curEntity->isNew()) {
+          if (count($existing) == 0) {
+            return $found; //Creating new
+          } else {
+            return "Entity with ID already exists";
+          }
+        } else {
+          if ($curEntity != null && $curEntity->field_product_id->value != $validateID) {
+            return $found; //Editing id
+          } elseif ($curEntity != null && $curEntity->field_product_id->value == $validateID) {
+            return $found; //Editing other attribute
+          } else {
+            return "Null entity";
+          }
+        }
+      } else {
+        return "Product with ID not found";
+      }
+    } catch (Exception $e) {
+      return "Exception thrown";
+    }
+  } else {
+    return "Invalid url host";
+  }
+  return "Unknown Error";
+}

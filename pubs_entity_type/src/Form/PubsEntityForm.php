@@ -4,6 +4,7 @@ namespace Drupal\pubs_entity_type\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\pubs_entity_type;
 
 /**
  * Form controller for the pubs entity edit form
@@ -54,22 +55,38 @@ class PubsEntityForm extends ContentEntityForm {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
     $entity = $form_state->getFormObject()->getEntity();
-    $existing = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_product_id' => $form_state->getValue('field_product_id')[0]]);
-    if ($entity->isNew()) {
-      if (count($existing) > 0) {
+    switch (\Drupal\pubs_entity_type\validatePubsEntity($form_state->getValue('field_product_id')[0]['value'], $entity)) {
+      case 'NaN':
+        $form_state->setErrorByName('field_product_id', $this->t("Product ID must be a whole number"));
+        return false;
+        break;
+      case 'Entity with ID already exists':
         $form_state->setErrorByName('field_product_id', $this->t("A publication entity already exists with this ID"));
-      }
-    } else {
-      if ($entity->field_product_id->value != $form_state->getValue('field_product_id')[0]['value']) {
-        //Dissallow changing the id, may use depending on how entities are referenced
-        //$form_state->setErrorByName('field_product_id', $this->t("The publication ID may not be changed on existing entities"));
-      } else if (count($existing) == 1 && array_key_exists($entity->id(), $existing)) {
-        //editing existing
-      } else {
-        debug("Unknown Publication entity ID error");//TODO remove after testing
-      }
+        return false;
+        break;
+      case 'Null entity':
+        $form_state->setErrorByName('field_product_id', $this->t("Entity not created"));
+        return false;
+        break;
+      case 'Product with ID not found':
+        $form_state->setErrorByName('field_product_id', $this->t("Product with given ID not Found"));
+        return false;
+        break;
+      case 'Exception thrown':
+        $form_state->setErrorByName('field_product_id', $this->t("Exception thrown while trying to open Product Feed"));
+        return false;
+        break;
+      case 'Invalid url host':
+        $form_state->setErrorByName('field_product_id', $this->t("Invalid feed host"));
+        return false;
+        break;
+      case 'Unknown Error':
+        $form_state->setErrorByName('field_product_id', $this->t("Unknown Error"));
+        return false;
+        break;
+      default:
+        return true;
+        break;
     }
   }
-
-
 }

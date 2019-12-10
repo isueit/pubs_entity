@@ -11,6 +11,7 @@ use Drupal\pubs_entity_type\PubsEntityInterface;
 use Drupal\Core\Entity\EntityPublishedInterface;
 use Drupal\Core\Entity\EntityPublishedTrait;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\pubs_entity_type;
 
 /**
  * Defines pubs_entity entity class
@@ -138,46 +139,45 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
-    $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
-    $url_host = parse_url($url, PHP_URL_HOST);
-    //Only allow approved hosts
-    if ($url_host == 'store.extension.iastate.edu' || $url_host == 'localhost') {
-      try {
-        if (0 === substr_compare($url, "/", -1)) {
-          $raw = file_get_contents($url . $this->field_product_id->value);
-        } else if (0 === substr_compare($url, ".json", -5)) {
-          $raw = file_get_contents($url);
-        } else {
-          $raw = file_get_contents($url . "/" . $this->field_product_id->value);
-        }
-
-        $decoded = json_decode($raw, TRUE);
-
-        if (is_array($decoded) && is_array($decoded[0])) {
-          $items = $decoded;
-        } else {
-          $items = [$decoded];
-        }
-        $found = false;
-
-        foreach ($items as $item) {
-          if (array_key_exists('productID', $item) && $item['productID'] == $this->field_product_id->value) {
-            $this->name->value = $item['title'];
-            $this->field_image_url->value = $item['image'];
-            $date = explode('/', $item['pubDate']);
-            $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
-            $this->field_publication_date->value = $formatDate;
-            $found = true;
-          }
-        }
-        if (!$found) {
-          $response = new RedirectResponse(\Drupal::request()->getRequestUri());
-          $response->send();
-          drupal_set_message(t('Provided product ID was not found in the given feed'), 'error');
-        }
-      } catch (\Exception $e) {
-        drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
-      }
+    $validate = \Drupal\pubs_entity_type\validatePubsEntity($this->field_product_id->value, $this);
+    switch ($validate) {
+      case 'NaN':
+        \Drupal::messenger()->addMessage(t('Product ID must be a whole number'), 'error');
+        $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+        $response->send();
+        break;
+      case 'Entity with ID already exists':
+        \Drupal::messenger()->addMessage(t('A publication exists with this ID'), 'error');
+        $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+        $response->send();
+        break;
+      case 'Null entity':
+        \Drupal::messenger()->addMessage(t('Provided product ID was not found in the given feed'), 'error');
+        $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+        $response->send();
+        break;
+      case 'Product with ID not found':
+        \Drupal::messenger()->addMessage(t('Provided product ID was not found in the given feed'), 'error');
+        $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+        $response->send();
+        break;
+      case 'Exception thrown':
+        \Drupal::messenger()->addMessage(t('Exception thrown getting publications'), 'error');
+        $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+        $response->send();
+        break;
+      case 'Invalid url host':
+        \Drupal::messenger()->addMessage(t('Feed host not in permitted list.'), 'error');
+        $response = new RedirectResponse(\Drupal::request()->getRequestUri());
+        $response->send();
+        break;
+      default:
+        $this->name->value = $validate->title;
+        $this->field_image_url->value = $validate->image;
+        $date = explode('/', $validate->pubDate);
+        $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
+        $this->field_publication_date->value = $formatDate;
+        break;
     }
 
     parent::preSave($storage);
@@ -230,7 +230,7 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['field_product_id'] = BaseFieldDefinition::create('integer')
+    $fields['field_product_id'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Product ID'))
       ->setTranslatable(FALSE)
       ->setRequired(TRUE)
@@ -240,7 +240,7 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
         'max_length' => 225,
       ))
       ->setDisplayOptions('form', array(
-        'type' => 'number',
+        'type' => 'textfield',
         'weight' => 1,
         'region' => 'content',
         'settings' => array(
