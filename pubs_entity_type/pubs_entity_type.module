@@ -71,14 +71,20 @@ function validatePubsEntity($validateID, $curEntity) {
  */
 function pubs_entity_type_rebuild() {
   $entities = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_from_feed' => FALSE]);
+  $deleted = [];
   foreach ($entities as $entity) {
     $passed = validatePubsEntity($entity->field_product_id->value, $entity);
     if (!is_string($passed) && is_object($passed)) {
       $entity->save(); //Saving automatically updates
+    } else if ($passed == 'Product with ID not found') {
+      array_push($deleted, $entity->field_product_id->value);
+      $entity->delete();
     } else {
-      //Can't find or other error, setting unpublished, may want to delete
+      //Other error, setting unpublished, may want to delete
       $entity->setUnpublished();
       $entity->save();
     }
   }
+  if (count($deleted) > 0)
+  \Drupal::messenger()->addMessage(t('Publication(s) not found in feed were removed: ' . json_encode($deleted)), 'warning');
 }
