@@ -1,9 +1,11 @@
 <?php
-namespace Drupal\pubs_entity_type;
 
+/**
+ * Validate entity in form and entity
+ */
 function validatePubsEntity($validateID, $curEntity) {
-  debug($validateID);
-  if (!is_numeric($validateID)) {
+  $filter_options = array('options' => array('min_range' => 0));
+  if (!is_numeric($validateID) || filter_var($validateID, FILTER_VALIDATE_INT, $filter_options) === FALSE) {
     return "NaN";
   }
 
@@ -18,7 +20,6 @@ function validatePubsEntity($validateID, $curEntity) {
       } else {
         $raw = file_get_contents($url . "/" . $validateID);
       }
-      debug($raw);
       $decoded = json_decode($raw);
       if (is_object($decoded) && get_class($decoded) == 'stdClass') {
         $items[] = $decoded;
@@ -60,4 +61,24 @@ function validatePubsEntity($validateID, $curEntity) {
     return "Invalid url host";
   }
   return "Unknown Error";
+}
+
+
+/**
+ * Implements hook_rebuild()
+ * Rebuild Publication entities
+ * Only updateds publications created outside of feeds, as they may not exist in the provided feed
+ */
+function pubs_entity_type_rebuild() {
+  $entities = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_from_feed' => FALSE]);
+  foreach ($entities as $entity) {
+    $passed = validatePubsEntity($entity->field_product_id->value, $entity);
+    if (!is_string($passed) && is_object($passed)) {
+      $entity->save(); //Saving automatically updates
+    } else {
+      //Can't find or other error, setting unpublished, may want to delete
+      $entity->setUnpublished();
+      $entity->save();
+    }
+  }
 }

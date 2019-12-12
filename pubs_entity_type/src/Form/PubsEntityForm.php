@@ -55,21 +55,21 @@ class PubsEntityForm extends ContentEntityForm {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
     $entity = $form_state->getFormObject()->getEntity();
-    switch (\Drupal\pubs_entity_type\validatePubsEntity($form_state->getValue('field_product_id')[0]['value'], $entity)) {
+    switch (validatePubsEntity($form_state->getValue('field_product_id')[0]['value'], $entity)) {
       case 'NaN':
-        $form_state->setErrorByName('field_product_id', $this->t("Product ID must be a whole number"));
+        $form_state->setErrorByName('field_product_id', $this->t("Product ID must be a positive whole number"));//Do not include id, no need to if it is not an id
         return false;
         break;
       case 'Entity with ID already exists':
-        $form_state->setErrorByName('field_product_id', $this->t("A publication entity already exists with this ID"));
+        $form_state->setErrorByName('field_product_id', $this->t("A publication entity already exists with ID: " . $form_state->getValue('field_product_id')[0]['value']));
         return false;
         break;
       case 'Null entity':
-        $form_state->setErrorByName('field_product_id', $this->t("Entity not created"));
+        $form_state->setErrorByName('field_product_id', $this->t("Error creating entity"));
         return false;
         break;
       case 'Product with ID not found':
-        $form_state->setErrorByName('field_product_id', $this->t("Product with given ID not Found"));
+        $form_state->setErrorByName('field_product_id', $this->t("Product with given ID: " . $form_state->getValue('field_product_id')[0]['value'] . " not found"));
         return false;
         break;
       case 'Exception thrown':

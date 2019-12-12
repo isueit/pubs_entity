@@ -72,6 +72,7 @@ class FeedPubsToEntitySettingsForm extends ConfigFormBase {
           if (count($existing) == 0) {
             $newEntity = \Drupal\pubs_entity_type\Entity\PubsEntity::create([
               'field_product_id' => $item['productID'],
+              'field_from_feed' => 1,
             ]);//Post save finds the other fields
             $newEntity->setPublished();
             $newEntity->save();

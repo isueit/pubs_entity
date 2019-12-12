@@ -139,25 +139,25 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
-    $validate = \Drupal\pubs_entity_type\validatePubsEntity($this->field_product_id->value, $this);
+    $validate = validatePubsEntity($this->field_product_id->value, $this);
     switch ($validate) {
       case 'NaN':
-        \Drupal::messenger()->addMessage(t('Product ID must be a whole number'), 'error');
+        \Drupal::messenger()->addMessage(t('Product ID must be a positive whole number'), 'error');//Not an id, do not include it
         $response = new RedirectResponse(\Drupal::request()->getRequestUri());
         $response->send();
         break;
       case 'Entity with ID already exists':
-        \Drupal::messenger()->addMessage(t('A publication exists with this ID'), 'error');
+        \Drupal::messenger()->addMessage(t('A publication exists with this ID: ' . $this->field_product_id->value), 'error');
         $response = new RedirectResponse(\Drupal::request()->getRequestUri());
         $response->send();
         break;
       case 'Null entity':
-        \Drupal::messenger()->addMessage(t('Provided product ID was not found in the given feed'), 'error');
+        \Drupal::messenger()->addMessage(t('Provided product ID: ' . $this->field_product_id->value . ' had an error in creating entity.'), 'error');
         $response = new RedirectResponse(\Drupal::request()->getRequestUri());
         $response->send();
         break;
       case 'Product with ID not found':
-        \Drupal::messenger()->addMessage(t('Provided product ID was not found in the given feed'), 'error');
+        \Drupal::messenger()->addMessage(t('Provided product ID: ' . $this->field_product_id->value . ' was not found in the given feed'), 'error');
         $response = new RedirectResponse(\Drupal::request()->getRequestUri());
         $response->send();
         break;
@@ -295,10 +295,8 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
     $fields['field_from_feed'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('From Feed'))
       ->setTranslatable(FALSE)
-      ->setRequired(FALSE)
-      ->setSettings(array(
-        'default_value' => FALSE,
-      ));
+      ->setRequired(TRUE)
+      ->setDefaultValue(0);
 
       $fields['weight'] = BaseFieldDefinition::create('integer')
         ->setLabel(t('Weight'))
