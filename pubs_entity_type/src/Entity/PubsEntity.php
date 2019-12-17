@@ -140,7 +140,8 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
    */
   public function preSave(EntityStorageInterface $storage) {
     $validate = validatePubsEntity($this->field_product_id->value, $this);
-    switch ($validate) {
+    if ($this->isPublished()) {
+      switch ($validate) {
       case 'NaN':
         \Drupal::messenger()->addMessage(t('Product ID must be a positive whole number'), 'error');//Not an id, do not include it
         $response = new RedirectResponse(\Drupal::request()->getRequestUri());
@@ -172,14 +173,25 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
         $response->send();
         break;
       default:
+        if ($this->isNew()) {
+          $this->name->value = $validate->title;
+          $this->field_image_url->value = $validate->image;
+          $date = explode('/', $validate->pubDate);
+          $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
+          $this->field_publication_date->value = $formatDate;
+        }
+        break;
+      }
+    } else {
+      //Update unpublshed entities, keep up to date for later republishing
+      if (!is_string($validate) && is_object($validate)) {
         $this->name->value = $validate->title;
         $this->field_image_url->value = $validate->image;
         $date = explode('/', $validate->pubDate);
         $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
         $this->field_publication_date->value = $formatDate;
-        break;
+      }
     }
-
     parent::preSave($storage);
   }
 

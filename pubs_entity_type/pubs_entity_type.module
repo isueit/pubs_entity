@@ -67,24 +67,22 @@ function validatePubsEntity($validateID, $curEntity) {
 /**
  * Implements hook_rebuild()
  * Rebuild Publication entities
- * Only updateds publications created outside of feeds, as they may not exist in the provided feed
+ * Only updates published publications created outside of feeds, as they may not exist in the provided feed
  */
 function pubs_entity_type_rebuild() {
-  $entities = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['field_from_feed' => FALSE]);
-  $deleted = [];
+  $entities = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['status' => TRUE]);
   foreach ($entities as $entity) {
     $passed = validatePubsEntity($entity->field_product_id->value, $entity);
     if (!is_string($passed) && is_object($passed)) {
-      $entity->save(); //Saving automatically updates
-    } else if ($passed == 'Product with ID not found') {
-      array_push($deleted, $entity->field_product_id->value);
-      $entity->delete();
+      $entity->name->value = $passed->title;
+      $entity->field_image_url->value = $passed->image;
+      $date = explode('/', $passed->pubDate);
+      $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
+      $entity->field_publication_date->value = $formatDate;
+      $entity->save();
     } else {
-      //Other error, setting unpublished, may want to delete
       $entity->setUnpublished();
       $entity->save();
     }
   }
-  if (count($deleted) > 0)
-  \Drupal::messenger()->addMessage(t('Publication(s) not found in feed were removed: ' . json_encode($deleted)), 'warning');
 }

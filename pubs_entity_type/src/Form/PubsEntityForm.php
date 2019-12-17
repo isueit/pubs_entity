@@ -39,6 +39,17 @@ class PubsEntityForm extends ContentEntityForm {
     $entity = $this->entity;
     $entity->setNewRevision();
 
+    //Update entity, new entities handled in entity defintion class
+    if (array_key_exists('validated_information', $form) && !$entity->isNew()) {
+      $validate = $form['validated_information'];
+      $entity->name->value = $validate->title;
+      $entity->field_image_url->value = $validate->image;
+      $date = explode('/', $validate->pubDate);
+      $formatDate = $date[1] . '-' . (($date[0] < 10) ? '0' . $date[0] : $date[0]) . '-01';
+      $entity->field_publication_date->value = $formatDate;
+      $entity->save();
+    }
+
     if ($status == SAVED_UPDATED) {
       drupal_set_message($this->t('The publication %staff has been updated.', ['%staff' => $entity->toLink()->toString()]));
     } else {
@@ -55,7 +66,8 @@ class PubsEntityForm extends ContentEntityForm {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
     $entity = $form_state->getFormObject()->getEntity();
-    switch (validatePubsEntity($form_state->getValue('field_product_id')[0]['value'], $entity)) {
+    $validate = validatePubsEntity($form_state->getValue('field_product_id')[0]['value'], $entity);
+    switch ($validate) {
       case 'NaN':
         $form_state->setErrorByName('field_product_id', $this->t("Product ID must be a positive whole number"));//Do not include id, no need to if it is not an id
         return false;
@@ -85,6 +97,7 @@ class PubsEntityForm extends ContentEntityForm {
         return false;
         break;
       default:
+        $form['validated_information'] = $validate;
         return true;
         break;
     }
