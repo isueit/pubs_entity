@@ -246,7 +246,6 @@ class PubsEntity extends EditorialContentEntityBase implements PubsEntityInterfa
       ->setLabel(t('Product ID'))
       ->setTranslatable(FALSE)
       ->setRequired(TRUE)
-      //->addConstraint('UniquePubId')
       ->setSettings(array(
         'default_value' => '',
         'max_length' => 225,

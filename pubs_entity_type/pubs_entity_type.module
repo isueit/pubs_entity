@@ -75,6 +75,7 @@ function validatePubsEntity($validateID, $curEntity) {
  */
 function pubs_entity_type_rebuild() {
   $entities = \Drupal::entityTypeManager()->getStorage('pubs_entity')->loadByProperties(['status' => TRUE]);
+  $unpublished = [];
   foreach ($entities as $entity) {
     $passed = validatePubsEntity($entity->field_product_id->value, $entity);
     if (!is_string($passed) && is_object($passed)) {
@@ -85,8 +86,10 @@ function pubs_entity_type_rebuild() {
       $entity->field_publication_date->value = $formatDate;
       $entity->save();
     } else {
+      $unpublished[] = "<" . $entity->field_product_id->value . "> " . $entity->name->value;
       $entity->setUnpublished();
       $entity->save();
     }
   }
+  \Drupal::logger('pubs_entity_type')->notice("Publications were not found in store feed and were unpublished: " . json_encode($unpublished));
 }
