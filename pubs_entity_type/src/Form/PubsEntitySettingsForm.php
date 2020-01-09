@@ -25,6 +25,22 @@ class PubsEntitySettingsForm extends ConfigFormBase {
   public function getFormId() {
     return 'pubs_entity_settings';
   }
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Check for valid URL
+    $url = $form_state->getValue('url');
+    if (filter_var($url, FILTER_VALIDATE_URL) === FALSE) {
+      $form_state->setErrorByName('url', $this->t('Not a valid URL'));
+    }
+
+    // Check for valid host, not sure if we need this test...
+    $host = parse_url($url, PHP_URL_HOST);
+    if (!($host == 'local.test' || $host == 'localhost' || $host == 'store.extension.iastate.edu')) {
+      $form_state->setErrorByName('url', $host . $this->t(' is an invalid hostname'));
+    }
+  }
 
   /**
    * {@inheritdoc}
