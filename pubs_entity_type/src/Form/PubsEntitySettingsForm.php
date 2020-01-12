@@ -60,7 +60,7 @@ class PubsEntitySettingsForm extends ConfigFormBase {
     $config = $this->config('pubs_entity_type.settings');
     $form['url'] = array(
       '#type' => 'textfield',
-      '#title' => $this->t('Json Feed Url'),
+      '#title' => $this->t('Individual Pubs URL'),
       '#description' => $this->t('URL of page that will return information about an individual publication. The Publication ID number will be appended to this URL.'),
       '#default_value' => $config->get('pubs_details_url'),
       '#maxlength' => 256,
