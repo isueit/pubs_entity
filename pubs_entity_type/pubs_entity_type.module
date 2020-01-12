@@ -9,7 +9,7 @@ function validatePubsEntity($validateID, $curEntity) {
     return "NaN";
   }
 
-  $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_store_url');
+  $url = \Drupal::config('pubs_entity_type.settings')->get('pubs_details_url');
   $url_host = parse_url($url, PHP_URL_HOST);
 
   try {

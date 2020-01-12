@@ -62,8 +62,8 @@ class FeedPubsToEntitySettingsForm extends ConfigFormBase {
         $raw = file_get_contents($url);
         $items = json_decode($raw, TRUE);
         $entity_config = \Drupal::service('config.factory')->getEditable('pubs_entity_type.settings');
-        $saved_url = $entity_config->get('pubs_store_url');
-        $entity_config->set('pubs_store_url', $url);
+        $saved_url = $entity_config->get('pubs_details_url');
+        $entity_config->set('pubs_details_url', $url);
         $entity_config->save();
 
         foreach ($items as $item) {
@@ -78,10 +78,10 @@ class FeedPubsToEntitySettingsForm extends ConfigFormBase {
             $newEntity->save();
           }
         }
-        $entity_config->set('pubs_store_url', $saved_url);
+        $entity_config->set('pubs_details_url', $saved_url);
         $entity_config->save();
       } catch (\Exception $e) {
-        $entity_config->set('pubs_store_url', $saved_url);
+        $entity_config->set('pubs_details_url', $saved_url);
         $entity_config->save();
         drupal_set_message(t('An Error occured pulling data from the given url'), 'error');
       }

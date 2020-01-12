@@ -48,7 +48,7 @@ class PubsEntitySettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
     $this->config('pubs_entity_type.settings')
-      ->set('pubs_store_url', $form_state->getValue('url'))
+      ->set('pubs_details_url', $form_state->getValue('url'))
       ->save();
     ;
   }
@@ -62,7 +62,7 @@ class PubsEntitySettingsForm extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Json Feed Url'),
       '#description' => $this->t('URL of page that will return information about an individual publication. The Publication ID number will be appended to this URL.'),
-      '#default_value' => $config->get('pubs_store_url'),
+      '#default_value' => $config->get('pubs_details_url'),
       '#maxlength' => 256,
       '#size' => 64,
     );
