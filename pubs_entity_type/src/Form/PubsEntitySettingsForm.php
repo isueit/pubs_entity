@@ -37,7 +37,7 @@ class PubsEntitySettingsForm extends ConfigFormBase {
 
     // Check for valid host, not sure if we need this test...
     $host = parse_url($url, PHP_URL_HOST);
-    if (!($host == 'local.test' || $host == 'localhost' || $host == 'store.extension.iastate.edu')) {
+    if (!($host == 'local.test' || $host == 'localhost' || $host == 'store.extension.iastate.edu' || $host=='www.preview.extension.iastate.edu')) {
       $form_state->setErrorByName('url', $host . $this->t(' is an invalid hostname'));
     }
   }
